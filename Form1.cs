@@ -9,24 +9,22 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SqlClient;
 
-namespace NhanVienPhongBan
+namespace QuanLyNhanVien_IT
 {
-    public partial class FrmNVPB : Form
+    public partial class Form1 : Form
     {
-        public FrmNVPB()
+        public Form1()
         {
             InitializeComponent();
         }
         SqlConnection ketnoi;
         SqlDataAdapter bodocghi;
-        SqlDataAdapter bodocghiphongban;
         int donghh;
         DataTable bangnv = new DataTable();
-        DataTable bangpb = new DataTable();
         void KetNoiDuLieu()
         {
             ketnoi = new SqlConnection();
-            string chuoiketnoi = "Data Source= .;Initial Catalog=QuanLyNhanVien_LT2;Integrated Security=True";
+            string chuoiketnoi = "Data Source= .;Initial Catalog=QuanLyNhanVien_LT;Integrated Security=True";
             ketnoi.ConnectionString = chuoiketnoi;
         }
         void LoadDuLieu()
@@ -39,54 +37,53 @@ namespace NhanVienPhongBan
             ketnoi.Close();
             dgvNhanVien.DataSource = bangnv;
         }
-        void LoadPhongBan()
-        {
-            String sql = "Select * from phongban";
-            bodocghiphongban = new SqlDataAdapter(sql, ketnoi);
-            bodocghiphongban.Fill(bangpb);
-            //Hiển thị combobox
-            cmbPhongBan.DataSource = bangpb;
-            cmbPhongBan.DisplayMember = "tenphong";
-            cmbPhongBan.ValueMember = "maphong";
-        }
+
         void ThemMoi()
         {
             txtMaNV.Enabled = true;
             txtMaNV.Text = "";
             txtHoTen.Text = "";
             txtNamSinh.Text = "";
-            cmbGioiTinh.Text = "";
+            cmbGT.Text = "";
             cmbDiaChi.Text = "";
             txtDienThoai.Text = "";
             cmbDiaChi.SelectedIndex = 0;
-            cmbGioiTinh.SelectedIndex = 2;
+            cmbGT.SelectedIndex = 2;
         }
-        private void txtMaNV_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void btnThoat_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
 
-        private void FrmNVPB_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
             cmbDiaChi.SelectedIndex = 0;
-            cmbGioiTinh.SelectedIndex = 2;           
+            cmbGT.SelectedIndex = 2;
             LoadDuLieu();
-            LoadPhongBan();
         }
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            //if (txtMaNV.Text == "")
+            //    MessageBox.Show("Mã nhân viên không được để trống");
+            //else
+            //{                
+            //    ketnoi.Open();
+            //    String sql = "insert into NhanVien Values('"+txtMaNV.Text+"', N'"+txtHoTen.Text+"', '"+txtNamSinh.Text+"',N'"+cmbGT.Text+"',N'"+ cmbDiaChi.Text + "','" + txtDienThoai.Text + "')";
+            //    SqlCommand cmd = new SqlCommand(sql, ketnoi);                
+            //    cmd.ExecuteNonQuery();
+            //    ketnoi.Close();
+            //    bangnv.Clear();
+            //    LoadDuLieu();                                
+            //}
+
+            //Cách khác
             if (txtMaNV.Text == "")
                 MessageBox.Show("Mã nhân viên không được để trống");
             else
             {
                 ketnoi.Open();
-                String sql = "Select count(*) From NhanVien where MaNV ='" + txtMaNV.Text + "'";
+                String sql = "Select count(*) From NhanVien where MaNV ='"+txtMaNV.Text+"'";
                 SqlCommand cmd = new SqlCommand(sql, ketnoi);
                 int count = (int)cmd.ExecuteScalar();
                 if (count > 0)
@@ -100,10 +97,9 @@ namespace NhanVienPhongBan
                     dongmoi["MaNV"] = txtMaNV.Text;
                     dongmoi["HoTen"] = txtHoTen.Text;
                     dongmoi["NamSinh"] = txtNamSinh.Text;
-                    dongmoi["GioiTinh"] = cmbGioiTinh.Text;
+                    dongmoi["GioiTinh"] = cmbGT.Text;
                     dongmoi["DiaChi"] = cmbDiaChi.Text;
                     dongmoi["DienThoai"] = txtDienThoai.Text;
-                    dongmoi["maphong"] = cmbPhongBan.SelectedValue;                    
                     bangnv.Rows.Add(dongmoi);
                     //cap nhat CSDL
                     SqlCommandBuilder capnhat = new SqlCommandBuilder(bodocghi);//Đi đôi với DataAdapter
@@ -111,44 +107,8 @@ namespace NhanVienPhongBan
                     ketnoi.Close();
                     bangnv.Clear();
                     LoadDuLieu();
-                    MessageBox.Show("Thêm nhân viên thành công!");
-                    txtMaNV.Enabled = true;
-                    ThemMoi();
                 }
-            }
-        }
-
-        private void btnXoa_Click(object sender, EventArgs e)
-        {
-            bangnv.Rows[donghh].Delete();
-            ketnoi.Open();
-            SqlCommandBuilder capnhat = new SqlCommandBuilder(bodocghi);
-            bodocghi.Update(bangnv);
-            ketnoi.Close();
-            bangnv.Clear();
-            LoadDuLieu();
-            MessageBox.Show("Xóa nhân viên thành công!");
-            ThemMoi();
-        }
-
-        private void btnSua_Click(object sender, EventArgs e)
-        {
-            bangnv.Rows[donghh]["MaNV"] = txtMaNV.Text;
-            bangnv.Rows[donghh]["HoTen"] = txtHoTen.Text;
-            bangnv.Rows[donghh]["NamSinh"] = txtNamSinh.Text;
-            bangnv.Rows[donghh]["GioiTinh"] = cmbGioiTinh.Text;
-            bangnv.Rows[donghh]["DiaChi"] = cmbDiaChi.Text;
-            bangnv.Rows[donghh]["DienThoai"] = txtDienThoai.Text;
-            bangnv.Rows[donghh]["maphong"] = cmbPhongBan.SelectedValue;
-            //cap nhat CSDL
-            ketnoi.Open();
-            SqlCommandBuilder capnhat = new SqlCommandBuilder(bodocghi);
-            bodocghi.Update(bangnv);
-            ketnoi.Close();
-            bangnv.Clear();
-            LoadDuLieu();
-            MessageBox.Show("Thông tin nhân viên đã được sửa!");
-            ThemMoi();
+            }            
         }
 
         private void dgvNhanVien_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -159,17 +119,97 @@ namespace NhanVienPhongBan
                 txtMaNV.Text = bangnv.Rows[donghh]["MaNV"].ToString();
                 txtHoTen.Text = bangnv.Rows[donghh]["HoTen"].ToString();
                 txtNamSinh.Text = bangnv.Rows[donghh]["NamSinh"].ToString();
-                cmbGioiTinh.Text = bangnv.Rows[donghh]["GioiTinh"].ToString();
+                cmbGT.Text = bangnv.Rows[donghh]["GioiTinh"].ToString();
                 cmbDiaChi.Text = bangnv.Rows[donghh]["DiaChi"].ToString();
-                txtDienThoai.Text = bangnv.Rows[donghh]["DienThoai"].ToString();                
-                cmbPhongBan.SelectedValue = bangnv.Rows[donghh]["maphong"];
+                txtDienThoai.Text = bangnv.Rows[donghh]["DienThoai"].ToString();
                 txtMaNV.Enabled = false;
             }
         }
 
+        private void btnXoa_Click(object sender, EventArgs e)
+        {
+            //ketnoi.Open();
+            //String sql = "DELETE from NhanVien where MaNV = '" + txtMaNV.Text + "'";
+            //SqlCommand cmd = new SqlCommand(sql, ketnoi);
+            //cmd.ExecuteNonQuery();//Không có giá trị trả về
+            //ketnoi.Close();
+            //bangnv.Clear();
+            //LoadDuLieu();
+
+            //Cách khác
+            bangnv.Rows[donghh].Delete();
+            ketnoi.Open();
+            SqlCommandBuilder capnhat = new SqlCommandBuilder(bodocghi);
+            bodocghi.Update(bangnv);
+            ketnoi.Close();
+            bangnv.Clear();
+            LoadDuLieu();
+        }
+
+        private void btnSua_Click(object sender, EventArgs e)
+        {
+            //ketnoi.Open();
+            //String sql = "Update NhanVien set HoTen = N'" + txtHoTen.Text + "',NamSinh='" + txtNamSinh.Text + "',GioiTinh =N'" + cmbGT.Text + "',DiaChi =N'" + cmbDiaChi.Text + "',DienThoai='" + txtDienThoai.Text + "'Where MaNV='" + txtMaNV.Text + "'";
+            //SqlCommand cmd = new SqlCommand(sql, ketnoi);
+            //cmd.ExecuteNonQuery();
+            //ketnoi.Close();
+            //bangnv.Clear();
+            //LoadDuLieu();
+
+            //Cách khác
+            bangnv.Rows[donghh]["MaNV"] = txtMaNV.Text;
+            bangnv.Rows[donghh]["HoTen"] = txtHoTen.Text;
+            bangnv.Rows[donghh]["NamSinh"] = txtNamSinh.Text;
+            bangnv.Rows[donghh]["GioiTinh"] = cmbGT.Text;
+            bangnv.Rows[donghh]["DiaChi"] = cmbDiaChi.Text;
+            bangnv.Rows[donghh]["DienThoai"] = txtDienThoai.Text;
+            //cap nhat CSDL
+            ketnoi.Open();
+            SqlCommandBuilder capnhat = new SqlCommandBuilder(bodocghi);
+            bodocghi.Update(bangnv);
+            ketnoi.Close();
+            bangnv.Clear();
+            LoadDuLieu();
+    }
+
+        private void btnMa_Click(object sender, EventArgs e)
+        {
+            //ketnoi.Open();
+            //String sql = "select * from NhanVien where MaNV = '" + txtMaNV.Text + "'";
+            //SqlCommand cmd = new SqlCommand(sql, ketnoi);
+            //SqlDataReader dr = cmd.ExecuteReader();
+            //String manv, ht, gt, dc, dt;
+            //int ns;
+            //if (dr.Read())
+            //{
+            //    manv = dr["MaNV"].ToString();
+            //    ht = dr["HoTen"].ToString();
+            //    gt = dr["GioiTinh"].ToString();
+            //    dc = dr["DiaChi"].ToString();
+            //    dt = dr["DienThoai"].ToString();
+            //    ns = (int)dr["NamSinh"];
+            //    String msg = String.Format("Mã NV: {0}\n Tên NV: {1}\n Giới Tính: {2}\n Năm Sinh: {3}\n Địa Chỉ: {4}\n Điện Thoại: {5}", manv, ht, gt, ns, dc, dt);
+            //    MessageBox.Show(msg, "Thông báo");
+            //}
+            //else
+            //    MessageBox.Show("Không tìm thấy!");
+            //ketnoi.Close();
+        }
+
+        private void btnSL_Click(object sender, EventArgs e)
+        {
+            //ketnoi.Open();
+            //String sql = "Select count(*) From NhanVien";
+            //SqlCommand cmd = new SqlCommand(sql, ketnoi);
+            //int count = (int)cmd.ExecuteScalar();
+            //String msg = String.Format("Số lượng nhân viên là: {0}", count);
+            //MessageBox.Show(msg, "Thông báo");
+            //ketnoi.Close();
+        }
+
         private void btnThemMoi_Click(object sender, EventArgs e)
         {
-            //ThemMoi();
+            ThemMoi();
         }
     }
 }
